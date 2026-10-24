@@ -1,0 +1,851 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Faculty Management System</title>
+
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+        :root {
+            color-scheme: light;
+            --login-ink: #172b4d;
+            --login-muted: #6b7890;
+            --login-blue: #3478e5;
+            --login-indigo: #5a55d6;
+            --login-transition: 0.3s ease;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100svh;
+            position: relative;
+            isolation: isolate;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 28px 16px;
+            background: linear-gradient(125deg, #d9e9ff 0%, #e5e5ff 48%, #f1e6ff 100%);
+            background-size: 220% 220%;
+            color: var(--login-ink);
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            animation: login-gradient 22s ease-in-out infinite alternate;
+        }
+
+        body::before,
+        body::after {
+            position: fixed;
+            z-index: -1;
+            pointer-events: none;
+            content: "";
+        }
+
+        body::before {
+            inset: -15%;
+            background:
+                radial-gradient(circle at 18% 28%, rgba(74, 131, 239, 0.24) 0 9rem, transparent 20rem),
+                radial-gradient(circle at 82% 22%, rgba(139, 111, 232, 0.2) 0 8rem, transparent 20rem),
+                radial-gradient(circle at 74% 83%, rgba(99, 174, 235, 0.19) 0 7rem, transparent 19rem);
+            filter: blur(25px);
+            animation: login-orbs 24s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            inset: 0;
+            opacity: 0.24;
+            background-image: radial-gradient(rgba(66, 91, 151, 0.2) 0.7px, transparent 0.7px);
+            background-size: 22px 22px;
+            mask-image: linear-gradient(135deg, #000, transparent 78%);
+        }
+
+        ::selection {
+            background: rgba(83, 124, 232, 0.24);
+            color: #142b54;
+        }
+
+        .login-box {
+            position: relative;
+            width: min(440px, 100%);
+            padding: 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.82);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow:
+                0 32px 80px rgba(31, 52, 96, 0.19),
+                0 10px 24px rgba(45, 66, 116, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(18px);
+            animation: login-card-enter 0.72s cubic-bezier(0.2, 0.75, 0.25, 1) both;
+            transition: transform var(--login-transition), box-shadow var(--login-transition);
+        }
+
+        .login-box:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 40px 95px rgba(31, 52, 96, 0.22),
+                0 14px 30px rgba(45, 66, 116, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .login-header {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            padding: 30px 26px 26px;
+            background:
+                radial-gradient(circle at 82% 12%, rgba(118, 169, 255, 0.2), transparent 13rem),
+                linear-gradient(135deg, #142c50 0%, #1c477a 58%, #2566a8 100%);
+            color: #fff;
+            text-align: center;
+        }
+
+        .login-header::before,
+        .login-header::after {
+            position: absolute;
+            z-index: -1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            content: "";
+            pointer-events: none;
+        }
+
+        .login-header::before {
+            top: -106px;
+            right: -47px;
+            width: 230px;
+            height: 230px;
+        }
+
+        .login-header::after {
+            top: -70px;
+            right: -10px;
+            width: 155px;
+            height: 155px;
+        }
+
+        .login-header .brand-logo {
+            position: relative;
+            display: block;
+            width: 92px;
+            height: 92px;
+            margin: 0 auto 17px;
+            padding: 3px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            background: #fff;
+            box-shadow:
+                0 0 0 7px rgba(255, 255, 255, 0.12),
+                0 12px 28px rgba(7, 19, 43, 0.3);
+            animation: login-logo-float 4.5s ease-in-out infinite;
+            transition: box-shadow var(--login-transition), transform var(--login-transition);
+        }
+
+        .login-header .brand-logo:hover {
+            transform: scale(1.05);
+            box-shadow:
+                0 0 0 9px rgba(255, 255, 255, 0.16),
+                0 15px 34px rgba(7, 19, 43, 0.34);
+        }
+
+        .login-header .logo {
+            color: #fff;
+            font-size: clamp(21px, 5vw, 25px);
+            font-weight: 750;
+            letter-spacing: -0.035em;
+            line-height: 1.25;
+            text-shadow: 0 2px 12px rgba(4, 17, 40, 0.3);
+        }
+
+        .login-header .subtitle {
+            margin-top: 9px;
+            color: rgba(235, 243, 255, 0.84);
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.035em;
+        }
+
+        .login-tabs {
+            position: relative;
+            display: flex;
+            padding: 7px;
+            background: #f2f5fb;
+            border-bottom: 1px solid #e8edf6;
+        }
+
+        .login-tabs::before {
+            position: absolute;
+            top: 7px;
+            bottom: 7px;
+            left: 7px;
+            width: calc((100% - 14px) / 2);
+            border-radius: 10px;
+            background: linear-gradient(120deg, #3478e5, #4e65dc);
+            box-shadow: 0 6px 15px rgba(52, 103, 215, 0.24);
+            content: "";
+            transform: translateX(0);
+            transition: transform var(--login-transition);
+        }
+
+        .login-tabs:has(#facultyTab.active)::before {
+            transform: translateX(100%);
+        }
+
+        .login-tabs button {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            z-index: 1;
+            width: 50%;
+            min-height: 44px;
+            padding: 12px 14px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #718097;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 650;
+            transition: color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition), transform var(--login-transition);
+        }
+
+        .login-tabs button.active {
+            background: linear-gradient(120deg, #3478e5, #4e65dc);
+            color: #fff;
+            box-shadow: 0 6px 15px rgba(52, 103, 215, 0.24);
+        }
+
+        .login-tabs:has(#adminTab.active) button.active,
+        .login-tabs:has(#facultyTab.active) button.active {
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .login-tabs button:not(.active):hover {
+            background: rgba(255, 255, 255, 0.76);
+            color: #315fba;
+        }
+
+        .login-tabs button:active {
+            transform: scale(0.98);
+        }
+
+        .login-form {
+            padding: 28px 32px 30px;
+        }
+
+        .login-form h3 {
+            margin: 0 0 22px;
+            color: var(--login-ink);
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 19px;
+        }
+
+        .login-form .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #40516b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .login-form .form-group input {
+            width: 100%;
+            min-height: 47px;
+            padding: 12px 14px;
+            border: 1px solid #dce4ef;
+            border-radius: 11px;
+            outline: 0;
+            background: #f8faff;
+            color: #1d2d49;
+            font: inherit;
+            font-size: 14px;
+            transition: border-color var(--login-transition), background var(--login-transition), box-shadow var(--login-transition), transform var(--login-transition);
+        }
+
+        .password-input-wrap {
+            position: relative;
+        }
+
+        .login-form .password-input-wrap input {
+            padding-right: 52px;
+        }
+
+        .login-box .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 7px;
+            display: grid;
+            width: 36px;
+            height: 36px;
+            min-height: 0;
+            padding: 0;
+            place-items: center;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #718097;
+            cursor: pointer;
+            box-shadow: none;
+            transform: translateY(-50%);
+            transition: background var(--login-transition), color var(--login-transition), transform var(--login-transition);
+        }
+
+        .login-box .password-toggle:hover {
+            background: #eaf1fd;
+            color: #316dcc;
+            box-shadow: none;
+        }
+
+        .login-box .password-toggle:focus-visible {
+            outline: 3px solid rgba(64, 122, 231, 0.62);
+            outline-offset: 1px;
+        }
+
+        .password-toggle svg {
+            width: 19px;
+            height: 19px;
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-width: 1.8;
+        }
+
+        .password-toggle .password-eye-closed {
+            display: none;
+        }
+
+        .password-toggle[aria-pressed="true"] .password-eye-open {
+            display: none;
+        }
+
+        .password-toggle[aria-pressed="true"] .password-eye-closed {
+            display: block;
+        }
+
+        .login-form .form-group input::placeholder {
+            color: #9aa7ba;
+            opacity: 1;
+            transition: color var(--login-transition);
+        }
+
+        .login-form .form-group input:focus {
+            border-color: #5d8fe8;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(52, 120, 229, 0.13), 0 6px 16px rgba(52, 120, 229, 0.07);
+            transform: translateY(-1px);
+        }
+
+        .login-form .form-group input:focus::placeholder {
+            color: #b0bbca;
+        }
+
+        .login-box .login-form .login-button {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            min-height: 48px;
+            margin-top: 2px;
+            padding: 13px 16px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(115deg, #2869d1 0%, #387fe8 52%, #555fd8 100%);
+            color: #fff;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            box-shadow: 0 9px 19px rgba(48, 103, 207, 0.25);
+            transition: transform var(--login-transition), box-shadow var(--login-transition), filter var(--login-transition);
+        }
+
+        .login-box .login-form .login-button:hover {
+            filter: brightness(1.06);
+            transform: translateY(-2px);
+            box-shadow: 0 13px 24px rgba(48, 103, 207, 0.32);
+        }
+
+        .login-box .login-form .login-button:active {
+            transform: translateY(0) scale(0.99);
+        }
+
+        .register-link {
+            margin-top: 19px;
+            text-align: center;
+        }
+
+        .register-link a {
+            position: relative;
+            display: inline-block;
+            padding: 2px 0;
+            color: #316dcc;
+            font-size: 13px;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        .register-link a::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            background: currentColor;
+            content: "";
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform var(--login-transition);
+        }
+
+        .register-link a:hover::after,
+        .register-link a:focus-visible::after {
+            transform: scaleX(1);
+        }
+
+        .messages {
+            margin: 18px 32px 0;
+        }
+
+        .error-message {
+            padding: 11px 13px;
+            border: 1px solid #f4cece;
+            border-radius: 10px;
+            background: #fff3f2;
+            color: #b83d43;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .login-tabs button.ripple-active::after,
+        .login-box .login-form .login-button.ripple-active::after {
+            position: absolute;
+            top: var(--ripple-y, 50%);
+            left: var(--ripple-x, 50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.42);
+            content: "";
+            pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            animation: login-ripple 0.65s ease-out forwards;
+        }
+
+        .login-tabs button:focus-visible,
+        .login-button:focus-visible,
+        .register-link a:focus-visible {
+            outline: 3px solid rgba(64, 122, 231, 0.62);
+            outline-offset: 3px;
+        }
+
+        @keyframes login-gradient {
+            from { background-position: 0% 45%; }
+            to { background-position: 100% 55%; }
+        }
+
+        @keyframes login-orbs {
+            from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+            to { transform: translate3d(1.5%, 1%, 0) scale(1.04); }
+        }
+
+        @keyframes login-card-enter {
+            from { opacity: 0; transform: translateY(20px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes login-logo-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes login-ripple {
+            to { opacity: 0; transform: translate(-50%, -50%) scale(19); }
+        }
+
+        @keyframes login-error-shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .login-box:has(.error-message) {
+            animation: login-card-enter 0.72s cubic-bezier(0.2, 0.75, 0.25, 1) both,
+                       login-error-shake 0.42s 0.72s ease both;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                align-items: flex-start;
+                padding: 18px 13px;
+            }
+
+            .login-box {
+                width: 100%;
+                margin: auto 0;
+                border-radius: 21px;
+            }
+
+            .login-header {
+                padding: 25px 18px 22px;
+            }
+
+            .login-header .brand-logo {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 15px;
+            }
+
+            .login-form {
+                padding: 24px 22px 25px;
+            }
+
+            .messages {
+                margin: 15px 22px 0;
+            }
+        }
+
+        @media (max-height: 700px) and (min-width: 481px) {
+            body {
+                align-items: flex-start;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="login-box">
+
+        <div class="login-header">
+
+            <img
+                class="brand-logo"
+                src="{% static 'tuition-logo.png' %}"
+                alt="Mervin Sir's Group Tuitions logo">
+
+            <div class="logo">
+                Mervin Sir's Group Tution
+            </div>
+
+            <div class="subtitle">
+                Faculty Management System
+            </div>
+
+        </div>
+
+
+        <div class="login-tabs">
+
+            <button
+                type="button"
+                id="adminTab"
+                class="active"
+                onclick="showLogin('admin')">
+
+                Admin
+
+            </button>
+
+
+            <button
+                type="button"
+                id="facultyTab"
+                onclick="showLogin('faculty')">
+
+                Faculty
+
+            </button>
+
+        </div>
+
+
+        {% if messages %}
+
+        <div class="messages">
+
+            {% for message in messages %}
+
+            <div class="error-message">
+
+                {{ message }}
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+
+        <div
+            class="login-form"
+            id="adminLogin">
+
+            <h3>Admin Login</h3>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label>
+                        Username
+                    </label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter admin username"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <div class="password-input-wrap">
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required>
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            aria-label="Show password"
+                            aria-pressed="false">
+                            <svg class="password-eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="password-eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.9"></path>
+                                <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10.4 10.4 0 0 0 4-.8"></path>
+                                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button">
+
+                    Login
+
+                </button>
+
+            </form>
+
+
+            <div class="register-link">
+
+                <a href="{% url 'admin_register' %}">
+                    Register Admin
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="login-form"
+            id="facultyLogin"
+            style="display: none;">
+
+            <h3>Faculty Login</h3>
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label>
+                        Faculty ID
+                    </label>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Enter Faculty ID"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Password
+                    </label>
+
+                    <div class="password-input-wrap">
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required>
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            aria-label="Show password"
+                            aria-pressed="false">
+                            <svg class="password-eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="password-eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.9"></path>
+                                <path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10.4 10.4 0 0 0 4-.8"></path>
+                                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="login-button">
+
+                    Login
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        function showLogin(type) {
+
+            const adminLogin =
+                document.getElementById("adminLogin");
+
+            const facultyLogin =
+                document.getElementById("facultyLogin");
+
+            const adminTab =
+                document.getElementById("adminTab");
+
+            const facultyTab =
+                document.getElementById("facultyTab");
+
+
+            if (type === "admin") {
+
+                adminLogin.style.display = "block";
+
+                facultyLogin.style.display = "none";
+
+                adminTab.classList.add("active");
+
+                facultyTab.classList.remove("active");
+
+            } else {
+
+                adminLogin.style.display = "none";
+
+                facultyLogin.style.display = "block";
+
+                adminTab.classList.remove("active");
+
+                facultyTab.classList.add("active");
+
+            }
+
+        }
+
+        document.querySelectorAll(".login-tabs button, .login-box .login-button").forEach(function(button) {
+            button.addEventListener("click", function(event) {
+                const bounds = button.getBoundingClientRect();
+
+                button.style.setProperty("--ripple-x", (event.clientX - bounds.left) + "px");
+                button.style.setProperty("--ripple-y", (event.clientY - bounds.top) + "px");
+                button.classList.remove("ripple-active");
+                void button.offsetWidth;
+                button.classList.add("ripple-active");
+
+                window.setTimeout(function() {
+                    button.classList.remove("ripple-active");
+                }, 700);
+            });
+        });
+
+        document.querySelectorAll(".password-toggle").forEach(function(toggle) {
+            toggle.addEventListener("click", function() {
+                const passwordInput = toggle.parentElement.querySelector("input");
+                const showPassword = passwordInput.type === "password";
+
+                passwordInput.type = showPassword ? "text" : "password";
+                toggle.setAttribute("aria-pressed", String(showPassword));
+                toggle.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+                passwordInput.focus();
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
