@@ -21,7 +21,7 @@ SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "h6l3i2e2)!x@(6jsst97n2=$ap3olt)2y)t8#^zkrbadgwuu!p",
 )
-DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
+DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
 
 _allowed_hosts = os.environ.get("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
@@ -120,9 +120,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
