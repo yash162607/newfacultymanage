@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Read environment variables with sensible defaults for local development.
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
-    "django-insecure-$u9jt)a!6-yj$5lssvtq017lkto!11w%s&5pfkaictp3_qfitm",
+    "h6l3i2e2)!x@(6jsst97n2=$ap3olt)2y)t8#^zkrbadgwuu!p",
 )
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("true", "1", "yes")
 
