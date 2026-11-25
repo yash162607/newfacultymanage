@@ -633,18 +633,20 @@
 
                 <div class="form-group">
 
-                    <label>
-                        Username
+                    <label for="admin-username">
+                        Admin Email / ID
                     </label>
 
                     <input
+                        id="admin-username"
                         type="text"
                         name="username"
-                        placeholder="Enter admin username"
+                        placeholder="admin@facultymanage.com"
                         required>
 
                 </div>
 
+                <input type="hidden" name="login_type" value="admin">
 
                 <div class="form-group">
 
@@ -690,14 +692,6 @@
             </form>
 
 
-            <div class="register-link">
-
-                <a href="{% url 'admin_register' %}">
-                    Register Admin
-                </a>
-
-            </div>
-
         </div>
 
 
@@ -726,6 +720,7 @@
 
                 </div>
 
+                <input type="hidden" name="login_type" value="faculty">
 
                 <div class="form-group">
 

@@ -1,33 +1,94 @@
 from datetime import datetime
+from functools import wraps
 
+from django.conf import settings
 from django import forms
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.hashers import check_password, make_password
 from django.http import JsonResponse
 from django.utils import timezone
 
-from .models import Admin, Faculty, Attendance, Salary, Schedule
+from .models import Faculty, Attendance, Salary, Schedule
+
+
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        user = request.user
+        if not (
+            user.is_authenticated
+            and user.is_staff
+            and user.is_superuser
+            and user.email.lower() == settings.ADMIN_EMAIL
+        ):
+            return redirect("login")
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+def _configured_admin_user():
+    if not settings.ADMIN_PASSWORD:
+        return None
+
+    user_model = get_user_model()
+    user, created = user_model.objects.get_or_create(
+        username=settings.ADMIN_EMAIL,
+        defaults={
+            "email": settings.ADMIN_EMAIL,
+            "is_staff": True,
+            "is_superuser": True,
+        },
+    )
+    if not user.is_staff or not user.is_superuser:
+        return None
+
+    update_fields = []
+    if created or not check_password(settings.ADMIN_PASSWORD, user.password):
+        user.set_password(settings.ADMIN_PASSWORD)
+        update_fields.append("password")
+    if user.email != settings.ADMIN_EMAIL:
+        user.email = settings.ADMIN_EMAIL
+        update_fields.append("email")
+    if update_fields:
+        user.save(update_fields=update_fields)
+    return user
+
 
 def login_view(request):
     if request.method == "POST":
-
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-        admin = Admin.objects.filter(Username=username).first()
-
-        if admin and check_password(password, admin.Password):
-            request.session["admin_id"] = admin.AdminID
-            return redirect("dashboard")
-
-        faculty = Faculty.objects.filter(FacultyID=username).first()
-
-        if faculty and check_password(password, faculty.Password):
-            request.session["faculty_id"] = faculty.FacultyID
-            return redirect("faculty_dashboard")
-
-        messages.error(request, "Invalid username or password.")
+        if request.POST.get("login_type") == "faculty":
+            faculty = Faculty.objects.filter(FacultyID=username).first()
+            if faculty and check_password(password, faculty.Password):
+                request.session["faculty_id"] = faculty.FacultyID
+                return redirect("faculty_dashboard")
+            messages.error(request, "Invalid Faculty ID or password.")
+        else:
+            admin_id = (username or "").strip().lower()
+            admin = (
+                _configured_admin_user()
+                if admin_id == settings.ADMIN_EMAIL
+                else None
+            )
+            authenticated_admin = (
+                authenticate(
+                    request,
+                    username=settings.ADMIN_EMAIL,
+                    password=password,
+                )
+                if admin
+                else None
+            )
+            if authenticated_admin and authenticated_admin.pk == admin.pk:
+                login(request, authenticated_admin)
+                request.session["admin_id"] = authenticated_admin.pk
+                return redirect("dashboard")
+            messages.error(request, "Invalid Admin ID or Password.")
 
     return render(request, "login.html")
 
@@ -54,55 +115,11 @@ def faculty_login(request):
 
 
 def logout_view(request):
-    request.session.flush()
+    logout(request)
     return redirect("login")
 
 
-def admin_register(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirmpassword")
-        fullname = request.POST.get("fullname")
-        email = request.POST.get("email")
-        contact = request.POST.get("contact")
-
-        if password != confirm_password:
-            return render(
-                request,
-                "admin_register.html",
-                {
-                    "error": "Passwords do not match"
-                }
-            )
-
-        if Admin.objects.filter(Username=username).exists():
-            return render(
-                request,
-                "admin_register.html",
-                {
-                    "error": "Username already exists"
-                }
-            )
-
-        Admin.objects.create(
-            Username=username,
-            Password=make_password(password),
-            FullName=fullname,
-            Email=email,
-            ContactNumber=contact
-        )
-
-        messages.success(
-            request,
-            "Admin registered successfully."
-        )
-
-        return redirect("login")
-
-    return render(request, "admin_register.html")
-
-
+@admin_required
 def dashboard(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -176,6 +193,7 @@ def dashboard(request):
     )
 
 
+@admin_required
 def manage_faculty(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -191,6 +209,7 @@ def manage_faculty(request):
     )
 
 
+@admin_required
 def add_faculty(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -256,6 +275,7 @@ def add_faculty(request):
     )
 
 
+@admin_required
 def update_faculty(request, faculty_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -297,6 +317,7 @@ def update_faculty(request, faculty_id):
     )
 
 
+@admin_required
 def delete_faculty(request, faculty_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -316,6 +337,7 @@ def delete_faculty(request, faculty_id):
     return redirect("manage_faculty")
 
 
+@admin_required
 def view_faculty(request, faculty_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -334,6 +356,7 @@ def view_faculty(request, faculty_id):
     )
 
 
+@admin_required
 def attendance(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -396,6 +419,7 @@ def attendance(request):
     )
 
 
+@admin_required
 def view_attendance(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -416,6 +440,7 @@ def view_attendance(request):
     )
 
 
+@admin_required
 def delete_attendance(request, attendance_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -437,6 +462,7 @@ def delete_attendance(request, attendance_id):
     )
 
 
+@admin_required
 def salary(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -589,6 +615,7 @@ def salary(request):
     )
 
 
+@admin_required
 def get_total_hours(request):
     if "admin_id" not in request.session:
         return JsonResponse(
@@ -646,6 +673,7 @@ def get_total_hours(request):
     )
 
 
+@admin_required
 def add_salary(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -734,6 +762,7 @@ def add_salary(request):
     )
 
 
+@admin_required
 def view_salary(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -755,6 +784,7 @@ def view_salary(request):
     )
 
 
+@admin_required
 def update_salary(request, salary_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -849,6 +879,7 @@ def update_salary(request, salary_id):
     )
 
 
+@admin_required
 def delete_salary(request, salary_id):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -868,6 +899,7 @@ def delete_salary(request, salary_id):
     return redirect("view_salary")
 
 
+@admin_required
 def schedule(request):
     if "admin_id" not in request.session:
         return redirect("login")
@@ -1000,6 +1032,7 @@ def schedule(request):
     )
 
 
+@admin_required
 def delete_schedule(request, schedule_id):
     if "admin_id" not in request.session:
         return redirect("login")

@@ -1,0 +1,8 @@
+# FacultyManage Admin Credentials
+
+ADMIN_EMAIL=admin@facultymanage.com
+ADMIN_PASSWORD=Mervin@1995
+
+# Django Security
+DEBUG=True
+SECRET_KEY=h6l3i2e2)!x@(6jsst97n2=$ap3olt)2y)t8#^zkrbadgwuu!p

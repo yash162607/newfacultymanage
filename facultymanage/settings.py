@@ -22,6 +22,11 @@ SECRET_KEY = os.environ.get(
     "h6l3i2e2)!x@(6jsst97n2=$ap3olt)2y)t8#^zkrbadgwuu!p",
 )
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
+ADMIN_EMAIL = os.environ.get(
+    "ADMIN_EMAIL",
+    "admin@facultymanage.com",
+).strip().lower()
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 _allowed_hosts = os.environ.get("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
